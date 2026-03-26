@@ -2,152 +2,224 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Examen - Herencia ligada al sexo</title>
+<title>Simulador UNAM - Herencia ligada al sexo</title>
+
 <style>
 body{
     font-family: Arial;
-    background:#f4f6f9;
+    margin:0;
+    background:#eef3f8;
 }
-.container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
-h2{text-align:center;}
-button{
-    padding:10px 20px;
-    margin-top:15px;
-    background:#007bff;
+
+.header{
+    background:#002b5c;
     color:white;
+    padding:15px;
+    text-align:center;
+}
+
+.main{
+    display:flex;
+}
+
+.sidebar{
+    width:220px;
+    background:#1c2b3a;
+    color:white;
+    height:100vh;
+    overflow-y:auto;
+    padding:10px;
+}
+
+.sidebar button{
+    width:45px;
+    height:45px;
+    margin:5px;
     border:none;
     border-radius:5px;
     cursor:pointer;
 }
+
+.answered{ background:#28a745; color:white;}
+.unanswered{ background:#ccc; }
+
+.content{
+    flex:1;
+    padding:20px;
+}
+
 .timer{
+    font-size:18px;
     font-weight:bold;
     color:red;
     text-align:right;
 }
-.question{margin:15px 0;}
-.result{margin-top:20px;}
+
+.question{
+    font-size:20px;
+}
+
+.options label{
+    display:block;
+    margin:10px 0;
+    cursor:pointer;
+}
+
+button{
+    padding:10px 15px;
+    margin:10px 5px;
+    border:none;
+    border-radius:5px;
+    background:#007bff;
+    color:white;
+    cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<div class="container" id="inicio">
-<h2>Examen Unidad 4</h2>
-<p>Herencia ligada al sexo y mutaciones</p>
+<div class="header">
+<h2>Simulador UNAM - Herencia ligada al sexo y mutaciones</h2>
+</div>
 
-<input type="text" id="nombre" placeholder="Nombre completo"><br><br>
-<input type="text" id="cuenta" placeholder="Número de cuenta"><br><br>
-
+<div id="inicio" style="padding:40px; text-align:center;">
+<input id="nombre" placeholder="Nombre completo"><br><br>
+<input id="cuenta" placeholder="Número de cuenta"><br><br>
 <button onclick="iniciar()">Iniciar examen</button>
 </div>
 
-<div class="container" id="examen" style="display:none;">
-<div class="timer" id="tiempo"></div>
-<form id="formulario"></form>
-<button onclick="terminar()">Finalizar</button>
+<div id="app" style="display:none;" class="main">
+
+<div class="sidebar" id="panel"></div>
+
+<div class="content">
+<div class="timer" id="timer"></div>
+
+<div id="pregunta"></div>
+<div id="opciones" class="options"></div>
+
+<button onclick="anterior()">Anterior</button>
+<button onclick="siguiente()">Siguiente</button>
+<button onclick="finalizar()">Finalizar</button>
 </div>
 
-<div class="container result" id="resultado" style="display:none;"></div>
+</div>
+
+<div id="resultado" style="display:none; padding:30px;"></div>
 
 <script>
 const preguntas = [
-{q:"La herencia ligada al sexo se refiere a genes ubicados en:",o:["Autosomas","Cromosomas sexuales","Mitocondrias","Ribosomas"],r:1},
-{q:"Los hombres son XY porque poseen:",o:["Dos cromosomas X","Un cromosoma X y uno Y","Dos cromosomas Y","Solo un cromosoma"],r:1},
-{q:"Una característica ligada al cromosoma X afecta más a:",o:["Mujeres","Hombres","Ambos igual","Ninguno"],r:1},
-{q:"El daltonismo es un ejemplo de:",o:["Mutación genómica","Herencia ligada al sexo","Mutación cromosómica","Herencia autosómica"],r:1},
-{q:"Una mujer portadora tiene genotipo:",o:["XX dominante","XhXh","XHXh","XY"],r:2},
-{q:"La hemofilia es:",o:["Dominante ligada al X","Recesiva ligada al X","Ligada al Y","Autosómica"],r:1},
-{q:"Los genes del cromosoma Y se heredan de:",o:["Madre a hijo","Padre a hija","Padre a hijo","Madre a hija"],r:2},
-{q:"Una mutación es:",o:["Cambio en ADN","División celular","Producción de proteínas","Síntesis de glucosa"],r:0},
-{q:"Una inserción es:",o:["Pérdida de ADN","Cambio de base","Adición de bases","Duplicación cromosómica"],r:2},
-{q:"Una deleción es:",o:["Adición","Pérdida","Cambio","Rotación"],r:1},
-{q:"Las mutaciones pueden ser:",o:["Solo malas","Solo buenas","Buenas, malas o neutras","Ninguna"],r:2},
-{q:"El síndrome de Down es:",o:["Mutación génica","Mutación cromosómica","Mutación genómica","Ninguna"],r:2},
-{q:"Una trisomía implica:",o:["1 cromosoma","2 cromosomas","3 cromosomas","4 cromosomas"],r:2},
-{q:"Las mutaciones cromosómicas afectan:",o:["Genes","Cromosomas","Proteínas","ARN"],r:1},
-{q:"Una translocación es:",o:["Intercambio de segmentos","Pérdida","Duplicación","Inserción"],r:0},
-{q:"Los hombres expresan más enfermedades X porque:",o:["Tienen dos X","Tienen un solo X","Tienen Y","No tienen genes"],r:1},
-{q:"El cromosoma Y tiene:",o:["Muchos genes","Pocos genes","Ningún gen","Igual que X"],r:1},
-{q:"Una mutación puntual afecta:",o:["Un gen","Todo el genoma","Cromosomas","Células"],r:0},
-{q:"La inversión es:",o:["Cambio de orden","Pérdida","Inserción","Duplicación"],r:0},
-{q:"El genotipo representa:",o:["Rasgo visible","Información genética","Proteína","Célula"],r:1},
-{q:"Fenotipo es:",o:["Gen","ADN","Rasgo observable","Cromosoma"],r:2},
-{q:"Una mujer necesita para expresar recesivo:",o:["Un alelo","Dos alelos","Tres alelos","Ninguno"],r:1},
-{q:"Un hombre necesita:",o:["Dos alelos","Uno","Tres","Cuatro"],r:1},
-{q:"Mutaciones genómicas afectan:",o:["Número de cromosomas","Genes","Proteínas","ARN"],r:0},
+{q:"La herencia ligada al sexo se presenta en genes ubicados en:",o:["Autosomas","Cromosomas sexuales","ARN","Proteínas"],r:1},
+{q:"Los hombres tienen cromosomas:",o:["XX","XY","YY","XO"],r:1},
+{q:"Una característica ligada al X afecta más a:",o:["Mujeres","Hombres","Ambos igual","Ninguno"],r:1},
+{q:"El daltonismo es:",o:["Autosómico","Ligado al X","Ligado al Y","Mutación cromosómica"],r:1},
+{q:"Una mujer portadora tiene genotipo:",o:["XX","XHXh","XhXh","XY"],r:1},
+{q:"La hemofilia es:",o:["Dominante","Recesiva ligada al X","Ligada al Y","Autosómica"],r:1},
+{q:"Los genes del cromosoma Y se heredan de:",o:["Madre","Padre a hijo","Padre a hija","Ambos"],r:1},
+{q:"Una mutación es:",o:["División celular","Cambio en ADN","Producción de proteínas","Reproducción"],r:1},
+{q:"Una inserción implica:",o:["Pérdida","Adición","Cambio","Rotación"],r:1},
+{q:"Una deleción es:",o:["Adición","Pérdida","Cambio","Duplicación"],r:1},
+{q:"Las mutaciones pueden ser:",o:["Solo malas","Solo buenas","Neutras también","Ninguna"],r:2},
+{q:"El síndrome de Down es:",o:["Génica","Cromosómica","Genómica","Ninguna"],r:2},
+{q:"Trisomía significa:",o:["1 cromosoma","2 cromosomas","3 cromosomas","4 cromosomas"],r:2},
+{q:"Mutaciones cromosómicas afectan:",o:["Genes","Cromosomas","Proteínas","ARN"],r:1},
+{q:"Translocación es:",o:["Intercambio","Pérdida","Adición","Cambio"],r:0},
+{q:"Hombres expresan más enfermedades X porque:",o:["Dos X","Un X","Un Y","Sin genes"],r:1},
+{q:"El cromosoma Y tiene:",o:["Muchos genes","Pocos genes","Ninguno","Igual que X"],r:1},
+{q:"Mutación puntual afecta:",o:["Un gen","Todo ADN","Cromosoma","Célula"],r:0},
+{q:"Inversión es:",o:["Cambio orden","Pérdida","Adición","Duplicación"],r:0},
+{q:"Genotipo es:",o:["Rasgo visible","Información genética","Proteína","Célula"],r:1},
+{q:"Fenotipo es:",o:["Gen","Rasgo observable","ADN","Cromosoma"],r:1},
+{q:"Una mujer expresa recesivo con:",o:["1 alelo","2 alelos","3 alelos","Ninguno"],r:1},
+{q:"Un hombre necesita:",o:["2 alelos","1 alelo","3 alelos","Ninguno"],r:1},
+{q:"Mutaciones genómicas afectan:",o:["Número cromosomas","Genes","Proteínas","ARN"],r:0},
 {q:"Duplicación es:",o:["Repetición","Pérdida","Cambio","Intercambio"],r:0},
-{q:"Las mutaciones ocurren en:",o:["ADN","ARN","Proteínas","Lípidos"],r:0},
+{q:"Mutaciones ocurren en:",o:["ADN","ARN","Proteínas","Lípidos"],r:0},
 {q:"Herencia ligada al Y se transmite:",o:["Madre-hijo","Padre-hijo","Madre-hija","Todos"],r:1},
-{q:"El ADN contiene:",o:["Información genética","Proteínas","Lípidos","Agua"],r:0},
+{q:"ADN contiene:",o:["Proteínas","Información genética","Agua","Lípidos"],r:1},
 {q:"Mutaciones pueden originarse por:",o:["Radiación","Errores replicación","Químicos","Todas"],r:3},
-{q:"Una mutación puede causar:",o:["Enfermedad","Variabilidad","Evolución","Todas"],r:3}
+{q:"Mutación puede causar:",o:["Enfermedad","Variabilidad","Evolución","Todas"],r:3}
 ];
 
-let tiempoTotal = preguntas.length * 65;
-let intervalo;
-let tiempos = [];
-let inicioPregunta;
-
-function formatoTiempo(seg){
-let h=Math.floor(seg/3600);
-let m=Math.floor((seg%3600)/60);
-let s=seg%60;
-return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-}
+let actual=0;
+let respuestas=new Array(preguntas.length);
+let tiempoTotal = preguntas.length*65;
+let tiempoPregunta = 0;
 
 function iniciar(){
 document.getElementById("inicio").style.display="none";
-document.getElementById("examen").style.display="block";
+document.getElementById("app").style.display="flex";
 
-const form=document.getElementById("formulario");
+crearPanel();
+mostrar();
 
-preguntas.forEach((p,i)=>{
-let div=document.createElement("div");
-div.className="question";
-div.innerHTML=`<p>${i+1}. ${p.q}</p>`+
-p.o.map((op,j)=>`<label><input type="radio" name="p${i}" value="${j}"> ${op}</label><br>`).join("");
-form.appendChild(div);
-});
-
-inicioPregunta = Date.now();
-
-intervalo=setInterval(()=>{
+setInterval(()=>{
 tiempoTotal--;
-document.getElementById("tiempo").innerText="Tiempo restante: "+formatoTiempo(tiempoTotal);
-if(tiempoTotal<=0) terminar();
+tiempoPregunta++;
+document.getElementById("timer").innerText=
+"Tiempo: "+formato(tiempoTotal)+" | Pregunta: "+tiempoPregunta+"s";
+if(tiempoTotal<=0) finalizar();
 },1000);
 }
 
-function terminar(){
-clearInterval(intervalo);
+function formato(s){
+let h=Math.floor(s/3600);
+let m=Math.floor((s%3600)/60);
+let sec=s%60;
+return `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+}
 
-let aciertos=0;
-let form=document.forms["formulario"];
-
-preguntas.forEach((p,i)=>{
-let r=form[`p${i}`].value;
-if(r==p.r) aciertos++;
+function crearPanel(){
+let panel=document.getElementById("panel");
+preguntas.forEach((_,i)=>{
+let btn=document.createElement("button");
+btn.innerText=i+1;
+btn.className="unanswered";
+btn.onclick=()=>{actual=i; mostrar();};
+panel.appendChild(btn);
 });
+}
 
-let totalTiempo = (preguntas.length*65) - tiempoTotal;
+function mostrar(){
+let p=preguntas[actual];
+document.getElementById("pregunta").innerHTML=`<div class="question">${actual+1}. ${p.q}</div>`;
 
-document.getElementById("examen").style.display="none";
+document.getElementById("opciones").innerHTML=p.o.map((op,i)=>
+`<label><input type="radio" name="op" ${respuestas[actual]==i?'checked':''}
+onclick="responder(${i})"> ${op}</label>`
+).join("");
+
+tiempoPregunta=0;
+}
+
+function responder(i){
+respuestas[actual]=i;
+document.querySelectorAll(".sidebar button")[actual].className="answered";
+}
+
+function siguiente(){
+if(actual<preguntas.length-1){actual++; mostrar();}
+}
+
+function anterior(){
+if(actual>0){actual--; mostrar();}
+}
+
+function finalizar(){
+let aciertos=0;
+preguntas.forEach((p,i)=>{if(respuestas[i]==p.r) aciertos++;});
+
+document.getElementById("app").style.display="none";
 document.getElementById("resultado").style.display="block";
 
 document.getElementById("resultado").innerHTML=`
 <h2>Resultados</h2>
-<p><b>Nombre:</b> ${document.getElementById("nombre").value}</p>
-<p><b>Cuenta:</b> ${document.getElementById("cuenta").value}</p>
+<p><b>Nombre:</b> ${nombre.value}</p>
+<p><b>Cuenta:</b> ${cuenta.value}</p>
 <p><b>Aciertos:</b> ${aciertos}/30</p>
 <p><b>Calificación:</b> ${(aciertos/30*10).toFixed(2)}</p>
-<p><b>Tiempo total:</b> ${formatoTiempo(totalTiempo)}</p>
+<p><b>Tiempo total:</b> ${formato((preguntas.length*65)-tiempoTotal)}</p>
 <button onclick="window.print()">Descargar PDF</button>
 `;
 }
